@@ -12,13 +12,11 @@ class protocolFunction():
 
     def checkSum(self, data):
         data = data.replace(' ', '')
-        check = 0x00
+        sum = 0
         for i in range(0, len(data), 2):
-            check = int(data[i:(i + 2)], 16) + check
-            if check > 0xff:
-                check -= 0x100
-        check_hex = hex(check)[2:]
-        return check_hex.rjust(2,'0').upper()
+            sum += int(data[i:i+2])
+        res = hex(sum)[2:][-2:].rjust(2,'0')
+        return res
 
     def AES_encrypt(self, text, key = KEY['00']):  # AES 加密
         if not text:
@@ -50,7 +48,7 @@ class protocolFunction():
         L = int(len(text) / 2)
         m = L % mode  #余数
         if m != 0:
-            x_hex = hex(mode-m)[2:].rjust(2,'0')
+            x_hex = hex(mode - m)[2:].rjust(2,'0')
             padding = (mode - m) * x_hex
         else:
             padding = hex(mode)[2:] * mode
@@ -62,12 +60,22 @@ class protocolFunction():
         padding = text[-2:]
         paddings = text[-2 * int(padding, 16):]
         paddings_set = set([paddings[i:i+2] for i in range(0, len(paddings), 2)])
-
         if padding in paddings_set and len(paddings_set) == 1:
             res = text[:len(text) - 2 * int(padding, 16)]
         else:
             res = text
         return res
+
+    def AES_enpadding_0(self, text, mode=16):
+        if not text: return None
+        text = text.replace(' ','')
+        L = int(len(text) / 2)
+        m = L % mode  #余数
+        if m:
+            padding = (mode-m) * 2 * '0'
+        else:
+            padding = ''
+        return text + padding
 
     def big_Endian(self, data):
         data = data.replace(' ','')
@@ -89,3 +97,8 @@ class protocolFunction():
         if  data < 0:
             data = int('F'*n, 16) + 1 - abs(data)
         return self.big_Endian(hex(data)[2:].rjust(n, '0'))
+
+if __name__ == '__main__':
+    x = protocolFunction()
+    m = '00 37 15 17 10 19 80 00 00 00 00 00 00 00 00 00 '
+    print(x.AES_encrypt(m,key=KEY['08']))

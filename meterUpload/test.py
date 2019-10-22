@@ -1,12 +1,9 @@
 import binascii
+import pandas
 
 
 
 if __name__ == '__main__':
-   d = [1,2]
-   a,b = d
-   print(a,'d,',b)
-
-
-   print(int(eval('5.1234')))
-   print(len('350001011019010100000001000002000000000200000400000000030000060000000004000008000000000500007F9698952503000000'))
+   path = r'C:\Users\ffy\Desktop\商业物联网-上告数据列表.xlsx'
+   rf = pandas.read_excel(path)
+  
