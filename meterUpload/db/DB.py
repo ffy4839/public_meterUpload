@@ -1,4 +1,30 @@
 import pymysql
+import pandas
+from configs import *
+
+def de_for_test(a):
+   a = str(a)
+   a = a.replace('[','').replace(']','').replace('"','').replace("'",'').replace('\n','')
+   a = a.split(' ')
+   return a
+
+def data_for_test():
+    path = r'C:\Users\ffy\Desktop\商业物联网-上告数据列表.xlsx'
+    rf = pandas.read_excel(path)
+    res = {}
+    n = 1
+    while True:
+        try:
+            ress = rf.iloc[n].values
+        except:
+            break
+        res[str(n)] = de_for_test(str(ress))
+        n += 1
+    ress = []
+    for key in res.keys():
+        if key != '1':
+            ress.append(tuple(zip(res['1'], res[key])))
+    return ress
 
 
 def show_dir(name):
@@ -29,6 +55,7 @@ class db():
 
 
 
+
 class dbSQL():
     def __init__(self, database_name, conn, cs):
         self.db_name = database_name
@@ -50,9 +77,26 @@ class dbSQL():
         sql = "create database {}".format(db_name)
         self.cs.execute(sql)
 
-    def creat_table(self, tabel_name):
+    def create_table(self, tabel_name, data):
         #创建表
-        pass
+        data_name =','.join(['{} varchar(30)'.format(TRANSFORM_Z2E[i[0]])for i in data])
+        sql = 'create table {name} ({data})'.format(name=tabel_name, data=data_name)
+
+        try:
+            self.cs.execute(sql)
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print(e)
+
+    def drop_table(self, table_name):
+        sql = 'drop table {}'.format(table_name)
+        try:
+            self.cs.execute(sql)
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print(e)
 
     def show_databases(self):
         # 查看数据库中的所有表
@@ -79,13 +123,39 @@ class dbSQL():
         self.shows(show,'all tables')
         return show
 
-    def create_table(self, table_name, data_list):
-        pass
-
-    def inset_into_data(self, data, table):
+    def insert_into_data(self,table, data):
         #插入数据
-        sql = 'ss'
-        pass
+        sql = self.insert_sql(table, data)
+        try:
+            self.cs.execute(sql)
+            self.conn.commit()
+        except Exception as e:
+            self.conn.rollback()
+            print(e)
+
+
+
+    def insert_sql(self,table ,data):
+        sql_table = '{}'.format(table)
+        sql_key = ','.join([TRANSFORM_Z2E[i[0]] for i in data])
+        sql_value = ','.join(['"{}"'.format(i[1]) for i in data ])
+
+        sql = '''insert into {table} ({table_name}) values({values})'''.format(
+                            table=sql_table,
+                            table_name=sql_key,
+                            values=sql_value)
+
+        return sql
+
+    def select_data(self,table,):
+        sql = 'select *from {}'.format(table)
+        try:
+            self.cs.execute(sql)
+            res = self.cs.fetchall()
+            return res
+        except Exception as e:
+            self.conn.rollback()
+            print(e)
 
     def shows(self, data, name):
         print(str(name).ljust(18,' '), end=': ')
@@ -96,9 +166,16 @@ class dbSQL():
                 print(data[i])
 
     def test(self):
+        res = data_for_test()
+        data = res[4]
         # print(self.choose_database('testxxssss'))
-        self.choose_database('testxx')
-        self.show_tables()
+        self.choose_database('xx')
+        # self.show_tables()
+        # # self.create_table('hello',data)
+        # self.insert_into_data('hello', data)
+        print(self.select_data('hello'))
+        self.conn.close()
+        # self.drop_table('hello')
         # self.creat_datebase('xxtest')
 
 
@@ -108,4 +185,10 @@ class dbSQL():
 
 if __name__ == '__main__':
     dbs = db('meterserver')
-    # show(pymysql.connect.)
+    # res = data_for_test()
+    # data = res[-1]
+    # sql = ':,'.join(['"{}"'.format(i[0]) for i in data])
+    #
+    # print(sql)
+
+    # print(','.join(['"{}"'.format(i[1]) for i in data]))
