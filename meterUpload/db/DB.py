@@ -35,7 +35,7 @@ def show_dir(name):
 class db():
     def __init__(self, db_name):
         self.connect_db(db_name)
-        self.dbSQL = dbSQL(db_name, self.conn, self.cursor)
+        self.dbSQL = dbSQL(db_name, self.conn)
 
 
     def connect_db(self, db_name):
@@ -48,7 +48,6 @@ class db():
                     charset='utf8'
                     )
         # show(self.conn)
-        self.cursor = self.conn.cursor()
 
 
 
@@ -57,25 +56,27 @@ class db():
 
 
 class dbSQL():
-    def __init__(self, database_name, conn, cs):
+    def __init__(self, database_name, conn):
         self.db_name = database_name
         self.conn = conn
-        self.cs = cs
         self.show_version()
         self.test()
 
     def show_version(self):
         #显示数据库版本号
+        show = None
         sql = 'select version()'
-        self.cs.execute(sql)
-        show = self.cs.fetchone()
-        self.shows(show,'version')
+        with self.conn.cursor() as cs:
+            cs.execute(sql)
+            show = cs.fetchone()
+            self.shows(show,'version')
         return show
 
     def creat_datebase(self,db_name):
         #创建数据库
         sql = "create database {}".format(db_name)
-        self.cs.execute(sql)
+        with self.conn.cursor() as cs:
+            cs.execute(sql)
 
     def create_table(self, tabel_name, data):
         #创建表
@@ -83,7 +84,8 @@ class dbSQL():
         sql = 'create table {name} ({data})'.format(name=tabel_name, data=data_name)
 
         try:
-            self.cs.execute(sql)
+            with self.conn.cursor() as cs:
+                cs.execute(sql)
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
@@ -92,7 +94,8 @@ class dbSQL():
     def drop_table(self, table_name):
         sql = 'drop table {}'.format(table_name)
         try:
-            self.cs.execute(sql)
+            with self.conn.cursor() as cs:
+                cs.execute(sql)
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
@@ -101,8 +104,9 @@ class dbSQL():
     def show_databases(self):
         # 查看数据库中的所有表
         sql = 'show databases'
-        self.cs.execute(sql)
-        show = self.cs.fetchall()
+        with self.conn.cursor() as cs:
+            cs.execute(sql)
+            show = cs.fetchall()
         self.shows(show,'all databases')
         return show
 
@@ -112,14 +116,16 @@ class dbSQL():
         for db in dbs:
             if db_name in db:
                 sql = 'use {}'.format(db_name)
-                self.cs.execute(sql)
+                with self.conn.cursor() as cs:
+                    cs.execute(sql)
                 return True
 
     def show_tables(self):
         #查看数据库中的所有表
         sql = 'show tables'
-        self.cs.execute(sql)
-        show = self.cs.fetchall()
+        with self.conn.cursor() as cs:
+            cs.execute(sql)
+            show = cs.fetchall()
         self.shows(show,'all tables')
         return show
 
@@ -127,7 +133,8 @@ class dbSQL():
         #插入数据
         sql = self.insert_sql(table, data)
         try:
-            self.cs.execute(sql)
+            with self.conn.cursor() as cs:
+                cs.execute(sql)
             self.conn.commit()
         except Exception as e:
             self.conn.rollback()
@@ -150,8 +157,9 @@ class dbSQL():
     def select_data(self,table,):
         sql = 'select *from {}'.format(table)
         try:
-            self.cs.execute(sql)
-            res = self.cs.fetchall()
+            with self.conn.cursor() as cs:
+                cs.execute(sql)
+                res = cs.fetchall()
             return res
         except Exception as e:
             self.conn.rollback()
@@ -173,7 +181,8 @@ class dbSQL():
         # self.show_tables()
         # # self.create_table('hello',data)
         # self.insert_into_data('hello', data)
-        print(self.select_data('hello'))
+        res = self.select_data('hello')
+        print(res,type(res))
         self.conn.close()
         # self.drop_table('hello')
         # self.creat_datebase('xxtest')

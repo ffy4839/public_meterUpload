@@ -2,12 +2,10 @@
 # import time
 # import binascii
 # import pprint
-# import sys
+import sys
 #
 #
 # def timeNow(st ='%Y-%m-%d %H:%M:%S'):
 #     return time.strftime(st, time.localtime(time.time()))
-
-
 
 
