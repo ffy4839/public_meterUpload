@@ -13,7 +13,7 @@ cryptography==2.7
 curtsies==0.3.0
 decorator==4.4.0
 defusedxml==0.6.0
-Django==1.10.3
+Django==1.11.29
 Flask==1.1.1
 Flask-Babel==0.12.2
 Flask-Login==0.4.1
